@@ -17,6 +17,7 @@ public class SwaggerConfig {
         String[] paths = {
                 "/common/payment/pay",              // 카드결제
                 "/common/payment/cancel",           // 결제취소
+                "/common/payment/cancel/partial",   // 부분취소
                 "/common/payment/retrieve"          // 결제정보조회
         };
 

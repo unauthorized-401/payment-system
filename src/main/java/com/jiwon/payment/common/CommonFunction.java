@@ -49,13 +49,13 @@ public class CommonFunction {
     }
 
     // 부가가치세 값이 안 들어왔을 때 계산
-    public static int computeVat(PaymentRequestParam paymentRequestParam) {
+    public static int computeVat(long price, String vat) {
         // 결제금액 / 11, 소수점 이하 반올림
-        if (Optional.ofNullable(paymentRequestParam.getVat()).isEmpty()) {
-            return (int) Math.round(paymentRequestParam.getPaymentPrice() / 11);
+        if (Optional.ofNullable(vat).isEmpty()) {
+            return (int) Math.round(price / 11);
 
         } else {
-            return Integer.valueOf(paymentRequestParam.getVat());
+            return Integer.valueOf(vat);
         }
     }
 

@@ -7,4 +7,6 @@ public interface PaymentService<T extends Payment> {
 
     T findById(String id);
     T findByPaymentId(String paymentId);
+
+    void update(String id, long paymentPrice, int vat);
 }

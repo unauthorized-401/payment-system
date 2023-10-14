@@ -6,4 +6,5 @@ public interface PaymentService<T extends Payment> {
     void save(T entity);
 
     T findById(String id);
+    T findByPaymentId(String paymentId);
 }

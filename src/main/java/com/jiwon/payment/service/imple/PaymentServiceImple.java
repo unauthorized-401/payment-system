@@ -20,4 +20,9 @@ public class PaymentServiceImple<T extends Payment> implements PaymentService<T>
     public T findById(String id) {
         return paymentRepository.findById(id);
     }
+
+    @Override
+    public T findByPaymentId(String paymentId) {
+        return paymentRepository.findByPaymentId(paymentId);
+    }
 }

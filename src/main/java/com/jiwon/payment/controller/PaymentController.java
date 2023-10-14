@@ -1,8 +1,6 @@
 package com.jiwon.payment.controller;
 
-import com.jiwon.payment.controller.parameter.CancelParam;
-import com.jiwon.payment.controller.parameter.PaymentParam;
-import com.jiwon.payment.controller.parameter.ResultParam;
+import com.jiwon.payment.controller.parameter.*;
 import com.jiwon.payment.entity.Payment;
 import com.jiwon.payment.common.EncryptionService;
 import com.jiwon.payment.service.PaymentService;
@@ -42,34 +40,34 @@ public class PaymentController {
     */
     @Operation(tags={"Payment"}, summary="Store payment information")
     @PostMapping(value="pay")
-    public ResponseEntity<ResultParam> cardPaying(@RequestBody(required = true) PaymentParam paymentParam) {
+    public ResponseEntity<PaymentResponseParam> cardPaying(@RequestBody(required = true) PaymentRequestParam paymentRequestParam) {
         try {
             // Check request
             log.info("======== CardPaying API ========");
-            log.info("Card Number: {}", paymentParam.getCardNumber());
-            log.info("Card Expiration Date: {}", paymentParam.getExpirationDate());
-            log.info("Card CVC: {}", paymentParam.getCvc());
-            log.info("Card Installment Months: {}", paymentParam.getInstallmentMonths());
-            log.info("Card Payment Price: {}", paymentParam.getPaymentPrice());
-            log.info("Card VAT: {}", paymentParam.getVat());
+            log.info("Card Number: {}", paymentRequestParam.getCardNumber());
+            log.info("Card Expiration Date: {}", paymentRequestParam.getExpirationDate());
+            log.info("Card CVC: {}", paymentRequestParam.getCvc());
+            log.info("Card Installment Months: {}", paymentRequestParam.getInstallmentMonths());
+            log.info("Card Payment Price: {}", paymentRequestParam.getPaymentPrice());
+            log.info("Card VAT: {}", paymentRequestParam.getVat());
             log.info("================================");
 
             // 관리번호 생성
             String manage_num = generateUniqueId();
 
             // 부가가치세 계산
-            int vat_price = computeVat(paymentParam);
+            int vat_price = computeVat(paymentRequestParam);
 
             // 카드번호, 유효기간, CVC 암호화
-            String encryptData = dataEncryption(paymentParam);
+            String encryptData = dataEncryption(paymentRequestParam);
 
             // 카드사로 보낼 데이터 생성
-            String string_data = generatePaymentStringData(paymentParam, manage_num, vat_price, encryptData);
+            String string_data = generatePaymentStringData(paymentRequestParam, manage_num, vat_price, encryptData);
 
             // Create Response
-            ResultParam resultParam = new ResultParam();
-            resultParam.setId(manage_num);
-            resultParam.setData(string_data);
+            PaymentResponseParam paymentResponseParam = new PaymentResponseParam();
+            paymentResponseParam.setId(manage_num);
+            paymentResponseParam.setData(string_data);
 
             // Create Header
             HttpHeaders header = new HttpHeaders();
@@ -83,13 +81,13 @@ public class PaymentController {
             payment.setId(manage_num);
             payment.setData(encryptData);
             payment.setType(Payment.PAYMENT_TYPE.PAYMENT);
-            payment.setInstallmentMonths(paymentParam.getInstallmentMonths());
-            payment.setPaymentPrice(paymentParam.getPaymentPrice());
+            payment.setInstallmentMonths(paymentRequestParam.getInstallmentMonths());
+            payment.setPaymentPrice(paymentRequestParam.getPaymentPrice());
             payment.setVat(vat_price);
             payment.setStringData(string_data);
             paymentService.save(payment);
 
-            return ResponseEntity.ok().headers(header).body(resultParam);
+            return ResponseEntity.ok().headers(header).body(paymentResponseParam);
 
         } catch (Exception e) {
             log.error("Exception : {}", e.getMessage());
@@ -108,21 +106,23 @@ public class PaymentController {
         Response: 관리번호, string 데이터
     */
     @Operation(tags={"Payment"}, summary="Cancel all payments")
-    @DeleteMapping(value="cancel")
-    public ResponseEntity<ResultParam> cardCanceling(@RequestBody(required = true) CancelParam cancelParam) {
+    @PostMapping(value="cancel")
+    public ResponseEntity<CancelResponseParam> cardCanceling(@RequestBody(required = true) CancelRequestParam cancelRequestParam) {
         try {
             // Check request
             log.info("======== CardCanceling API ========");
-            log.info("Card ID: {}", cancelParam.getId());
-            log.info("Card Cancel Price: {}", cancelParam.getCancelPrice());
-            log.info("Card VAT: {}", cancelParam.getVat());
+            log.info("Card ID: {}", cancelRequestParam.getId());
+            log.info("Card Cancel Price: {}", cancelRequestParam.getCancelPrice());
+            log.info("Card VAT: {}", cancelRequestParam.getVat());
             log.info("===================================");
 
-            Optional<Payment> optionalPayment = Optional.ofNullable(paymentService.findById(cancelParam.getId()));
+            Optional<Payment> optionalPayment = Optional.ofNullable(paymentService.findById(cancelRequestParam.getId()));
 
             if (optionalPayment.isPresent()) {
                 Payment payment = optionalPayment.get();
                 String data = payment.getData();
+
+                // TODO: 해당 결제에 대한 취소건이 이미 있는지 확인
 
                 // TODO: 복호화 과정 함수로 따로 빼기
                 // 카드번호, 유효기간, CVC 복호화
@@ -137,19 +137,19 @@ public class PaymentController {
                 Payment newPayment = new Payment();
                 newPayment.setType(Payment.PAYMENT_TYPE.CANCEL);
 
-                if (cancelParam.getCancelPrice() != payment.getPaymentPrice()) {
+                if (cancelRequestParam.getCancelPrice() != payment.getPaymentPrice()) {
                     // TODO: 결제 금액과 취소 금액이 동일하지 않아 취소할 수 없음, 에러처리
                 }
 
                 // 할부개월수는 0으로 저장
                 newPayment.setInstallmentMonths(0);
-                newPayment.setCancelPrice(cancelParam.getCancelPrice());
+                newPayment.setCancelPrice(cancelRequestParam.getCancelPrice());
 
                 // 부가가치세 값이 없는 경우 결제데이터의 부가가치세 금액으로 취소
-                if (cancelParam.getVat() == 0) newPayment.setVat(payment.getVat());
-                else newPayment.setVat(cancelParam.getVat());
+                if (cancelRequestParam.getVat() == 0) newPayment.setVat(payment.getVat());
+                else newPayment.setVat(cancelRequestParam.getVat());
 
-                if (cancelParam.getVat() != 0 && cancelParam.getVat() != payment.getVat()) {
+                if (cancelRequestParam.getVat() != 0 && cancelRequestParam.getVat() != payment.getVat()) {
                     // TODO: 부가가치세 금액이 맞지 않아 취소할 수 없음, 에러처리
                 }
 
@@ -166,9 +166,9 @@ public class PaymentController {
                 newPayment.setStringData(string_data);
 
                 // Create Response
-                ResultParam resultParam = new ResultParam();
-                resultParam.setId(manage_num);
-                resultParam.setData(string_data);
+                CancelResponseParam cancelResponseParam = new CancelResponseParam();
+                cancelResponseParam.setId(manage_num);
+                cancelResponseParam.setData(string_data);
 
                 // Create Header
                 HttpHeaders header = new HttpHeaders();
@@ -180,7 +180,7 @@ public class PaymentController {
                 // PAYMENT Table
                 paymentService.save(newPayment);
 
-                return ResponseEntity.ok().headers(header).body(resultParam);
+                return ResponseEntity.ok().headers(header).body(cancelResponseParam);
 
             } else {
                 // TODO: 없는 데이터인 경우 Exception 처리
@@ -207,9 +207,54 @@ public class PaymentController {
         Response: 관리번호, 카드정보(카드번호, 유효기간, CVC), 결제/취소 구분, 금액정보(결제/취소 금액, 부가가치세)
     */
     @Operation(tags={"Payment"}, summary="Get payment information")
-    @GetMapping(value="retrieve")
-    public ResponseEntity retrieving() {
-        return new ResponseEntity(HttpStatus.OK);
+    @PostMapping(value="retrieve")
+    public ResponseEntity<RetrieveResponseParam> retrieving(@RequestBody(required = true) RetrieveRequestParam retrieveRequestParam) {
+        try {
+            Optional<Payment> optionalPayment = Optional.ofNullable(paymentService.findById(retrieveRequestParam.getId()));
+
+            if (optionalPayment.isPresent()) {
+                Payment payment = optionalPayment.get();
+
+                RetrieveResponseParam retrieveResponseParam = new RetrieveResponseParam();
+                retrieveResponseParam.setId(payment.getId());
+
+                // 카드번호, 유효기간, CVC 복호화
+                String decryptData = EncryptionService.decryptData(payment.getData());
+
+                StringTokenizer tokens = new StringTokenizer(decryptData, "|");
+                String card_num = tokens.hasMoreTokens() ? tokens.nextToken() : "";
+                String expire_date = tokens.hasMoreTokens() ? tokens.nextToken() : "";
+                String cvc = tokens.hasMoreTokens() ? tokens.nextToken() : "";
+
+                retrieveResponseParam.setCardNumber(card_num);
+                retrieveResponseParam.setExpirationPeriod(expire_date);
+                retrieveResponseParam.setCvc(cvc);
+
+                retrieveResponseParam.setType(payment.getType());
+
+                if (payment.getType() == Payment.PAYMENT_TYPE.PAYMENT) retrieveResponseParam.setPrice(payment.getPaymentPrice());
+                else retrieveResponseParam.setPrice(payment.getCancelPrice());
+
+                retrieveResponseParam.setVat(payment.getVat());
+
+                return ResponseEntity.ok().body(retrieveResponseParam);
+
+            } else {
+                // TODO: 없는 데이터인 경우 Exception 처리
+
+                // 결제에 대한 전체취소는 1번만 가능
+            }
+
+            return null;
+
+        } catch (Exception e) {
+            log.error("Exception : {}", e.getMessage());
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .header("X-Exception-Type", e.getClass().toString())
+                    .header("X-Exception-Cause", e.getMessage())
+                    .build();
+        }
     }
 
     /*
@@ -231,21 +276,21 @@ public class PaymentController {
     }
 
     // 부가가치세 값이 안 들어왔을 때 계산
-    public static int computeVat(PaymentParam paymentParam) {
+    public static int computeVat(PaymentRequestParam paymentRequestParam) {
         // 결제금액 / 11, 소수점 이하 반올림
-        if (paymentParam.getVat() == 0) {
-            return (int) Math.round(paymentParam.getPaymentPrice() / 11);
+        if (paymentRequestParam.getVat() == 0) {
+            return (int) Math.round(paymentRequestParam.getPaymentPrice() / 11);
 
         } else {
-            return paymentParam.getVat();
+            return paymentRequestParam.getVat();
         }
     }
 
     // 카드번호, 유효기간, CVC 데이터를 암호화
-    public static String dataEncryption(PaymentParam paymentParam) {
-        String card_num = paymentParam.getCardNumber();
-        String expire_date = paymentParam.getExpirationDate();
-        String cvc = paymentParam.getCvc();
+    public static String dataEncryption(PaymentRequestParam paymentRequestParam) {
+        String card_num = paymentRequestParam.getCardNumber();
+        String expire_date = paymentRequestParam.getExpirationDate();
+        String cvc = paymentRequestParam.getCvc();
 
         String full_data = card_num.concat("|").concat(expire_date).concat("|").concat(cvc);
         full_data = EncryptionService.encryptData(full_data);
@@ -254,14 +299,14 @@ public class PaymentController {
     }
 
     // 카드사로 전송하는 string 데이터 생성 (Payment)
-    public static String generatePaymentStringData(PaymentParam paymentParam, String manage_num, int vat_price, String encryptData) {
+    public static String generatePaymentStringData(PaymentRequestParam paymentRequestParam, String manage_num, int vat_price, String encryptData) {
         String data = " 446PAYMENT   ";
 
         // 관리번호 20자리
         data = data.concat(manage_num);
 
         // 카드번호 10-16자리
-        String card_num = paymentParam.getCardNumber();
+        String card_num = paymentRequestParam.getCardNumber();
         int card_num_length = card_num.length();
         String card_align = " ".repeat(Math.max(0, 20 - card_num_length));
 
@@ -270,16 +315,16 @@ public class PaymentController {
 
         // 할부개월수 2자리
         data = data.concat("0");
-        data = data.concat(String.valueOf(paymentParam.getInstallmentMonths()));
+        data = data.concat(String.valueOf(paymentRequestParam.getInstallmentMonths()));
 
         // 유효기간 4자리
-        data = data.concat(paymentParam.getExpirationDate());
+        data = data.concat(paymentRequestParam.getExpirationDate());
 
         // CVC 3자리
-        data = data.concat(paymentParam.getCvc());
+        data = data.concat(paymentRequestParam.getCvc());
 
         // 결제금액 3-10자리
-        String pay_num = String.valueOf(paymentParam.getPaymentPrice());
+        String pay_num = String.valueOf(paymentRequestParam.getPaymentPrice());
         int pay_num_length = pay_num.length();
         String pay_align = " ".repeat(Math.max(0, 10 - pay_num_length));
 

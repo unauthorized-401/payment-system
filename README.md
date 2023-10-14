@@ -31,13 +31,13 @@
   - [x] h2 데이터베이스 연동
   - [x] swagger 연동
 - [x] 테이블 설계
-- [ ] 필수 API 3개 구현
+- [x] 필수 API 3개 구현
   - [x] 카드 결제 API
     - [x] API 내부 동작 설계
     - [x] 데이터 암호화 진행
     - [x] 데이터베이스 저장
-  - [ ] 결제 취소 API
-  - [ ] 결제 정보조회 API
+  - [x] 결제 취소 API
+  - [x] 결제 정보조회 API
 - [ ] 필수 API 테스트 코드 작성
   - [ ] 카드 결제 API
   - [ ] 결제 취소 API
@@ -94,11 +94,18 @@ POST /common/payment/pay
 }
 ```
 
-DELETE /common/payment/cancel
+POST /common/payment/cancel
 ```
 {
   "id": "OWRjZTZlZjctZTdkZC00",
   "cancelPrice": 110000,
   "vat": 0
+}
+```
+
+POST /common/payment/retrieve
+```
+{
+    "id": "OWRjZTZlZjctZTdkZC00"
 }
 ```

@@ -90,7 +90,7 @@ POST /common/payment/pay
   "cvc": "777",
   "installmentMonths": 0,
   "paymentPrice": 110000,
-  "vat": 10000
+  "vat": "10000"
 }
 ```
 
@@ -99,7 +99,7 @@ POST /common/payment/cancel
 {
   "id": "OWRjZTZlZjctZTdkZC00",
   "cancelPrice": 110000,
-  "vat": 0
+  "vat": "10000"
 }
 ```
 
@@ -109,3 +109,12 @@ POST /common/payment/retrieve
     "id": "OWRjZTZlZjctZTdkZC00"
 }
 ```
+
+### Error Status Code
+- ResourceNotFoundException (404)
+  - 이미 전체취소했는데 취소를 또 시도할 때
+- InvalidParameterException (405)
+  - 필수값이 입력되지 않았을 때
+  - 없는 데이터를 조회하려 할 때
+- NotSupportException (406)
+  - 금액이나 부가가치세가 올바르지 않을 때

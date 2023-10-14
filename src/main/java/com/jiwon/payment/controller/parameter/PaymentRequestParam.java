@@ -10,8 +10,6 @@ import lombok.Setter;
 */
 @Getter @Setter
 public class PaymentRequestParam {
-    // TODO: NULL 값 허용, 값 범위 제한
-
     private String cardNumber;
 
     private String expirationDate;
@@ -22,5 +20,5 @@ public class PaymentRequestParam {
 
     private long paymentPrice;
 
-    private int vat;
+    private String vat;
 }

@@ -13,14 +13,11 @@ public class Payment {
     @Id
     private String id;
 
-    // 카드번호: 10-16자리
-    private String cardNumber;
+    // 원거래 관리번호 (취소시에만)
+    private String paymentId;
 
-    // 유효기간: 4자리, MMYY
-    private String expirationDate;
-
-    // CVC: 3자리
-    private String cvc;
+    // 카드번호, 유효기간, CVC 암호화 데이터
+    private String data;
 
     // 결제/취소 구분
     private PAYMENT_TYPE type;
@@ -35,25 +32,14 @@ public class Payment {
     private long cancelPrice;
 
     // 부가가치세: 결제금액/11, 소수점 이하 반올림, 옵션
-    private long vat;
+    private int vat;
 
     // 카드사데이터: 공통헤더 부문 + 데이터 부문
     @Column(length=450)
-    private String data;
-
-    // 결과: 성공/실패
-    private RESULT_TYPE result;
-
-    // 설명: 성공 혹은 실패 금액 및 이유
-    private String information;
+    private String stringData;
 
     public enum PAYMENT_TYPE {
         PAYMENT,        // 결제
         CANCEL          // 취소
-    }
-
-    public enum RESULT_TYPE {
-        SUCCESS,        // 성공
-        FAIL            // 실패
     }
 }

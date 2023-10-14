@@ -58,17 +58,14 @@
 | |COLUMN NAME|INFORMATION|
 |-|----------|-------|
 |관리번호|ID|UNIQUE ID, 20자리|
-|카드번호|CARD_NUMBER|10-16자리|
-|유효기간|EXPIRATION_DATE|4자리, MMYY|
-|CVC|CVC|3자리|
+|원거래 관리번호|PAYMENT_ID|취소시에만 저장|
 |결제/취소 구분|TYPE|PAYMENT/CANCEL/PARTIAL_CANCEL|
 |할부개월수|INSTALLMENT_MONTHS|0-12, 0은 일시불|
 |결제금액|PAYMENT_PRICE|100원 이상 10억원 이하 숫자|
 |취소금액|CANCEL_PRICE|100원 이상 10억원 이하 숫자|
 |부가가치세|VAT|결제금액/11, 소수점 이하 반올림|
-|카드사데이터|DATA|공통헤더 부문 + 데이터 부문|
-|결과|RESULT|성공/실패|
-|설명|INFORMATION|성공 혹은 실패 금액 및 이유|
+|암호데이터|DATA|카드번호, 유효기간, CVC 암호화 데이터|
+|카드사데이터|STRING_DATA|공통헤더 부문 + 데이터 부문|
 
 ## 문제 해결
 
@@ -85,7 +82,7 @@ Jasypt 라이브러리 + PBEWithMD5AndDES 암호화 알고리즘
 1. [Swagger](http://localhost:8080/swagger-ui/index.html)에 접속한다.
 2. 아래 예시 JSON 데이터를 이용해 API들을 테스트한다.
 
-POST /common/payment/api
+POST /common/payment/pay
 ```
 {
   "cardNumber": "1234567890123456",
@@ -94,5 +91,14 @@ POST /common/payment/api
   "installmentMonths": 0,
   "paymentPrice": 110000,
   "vat": 10000
+}
+```
+
+DELETE /common/payment/cancel
+```
+{
+  "id": "OWRjZTZlZjctZTdkZC00",
+  "cancelPrice": 110000,
+  "vat": 0
 }
 ```

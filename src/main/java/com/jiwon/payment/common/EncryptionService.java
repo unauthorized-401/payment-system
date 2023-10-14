@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 public class EncryptionService extends EncryptionConfig {
     // TODO: 암호화 키 환경변수로 지정
+    // TODO: 카드 데이터 100자리
 
     public static String encryptData(String text) {
         StandardPBEStringEncryptor jasypt = new StandardPBEStringEncryptor();

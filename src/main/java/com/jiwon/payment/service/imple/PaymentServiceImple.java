@@ -15,4 +15,9 @@ public class PaymentServiceImple<T extends Payment> implements PaymentService<T>
     public void save(T entity) {
         paymentRepository.save(entity);
     }
+
+    @Override
+    public T findById(String id) {
+        return paymentRepository.findById(id);
+    }
 }

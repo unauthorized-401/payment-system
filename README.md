@@ -32,10 +32,10 @@
   - [x] swagger 연동
 - [x] 테이블 설계
 - [ ] 필수 API 3개 구현
-  - [ ] 카드 결제 API
+  - [x] 카드 결제 API
     - [x] API 내부 동작 설계
-    - [ ] 데이터베이스 저장
-    - [ ] 데이터 암호화 진행
+    - [x] 데이터 암호화 진행
+    - [x] 데이터베이스 저장
   - [ ] 결제 취소 API
   - [ ] 결제 정보조회 API
 - [ ] 필수 API 테스트 코드 작성
@@ -55,24 +55,44 @@
 ## 테이블 설계
 테이블명 : PAYMENT
 
-| |COLUMN NAME|TYPE|INFORMATION|
-|-|-----------|----|-----------|
-|관리번호|ID||UNIQUE ID, 20자리|
-|카드번호|CARD_NUMBER||10-16자리|
-|유효기간|EXPIRATION_DATE||4자리, MMYY|
-|CVC|CVC||3자리|
-|결제/취소 구분|TYPE||PAYMENT/CANCEL/PARTIAL_CANCEL|
-|할부개월수|INSTALLMENT_MONTHS||0-12, 0은 일시불|
-|결제금액|PAYMENT_PRICE||100원 이상 10억원 이하 숫자|
-|취소금액|CANCEL_PRICE||100원 이상 10억원 이하 숫자|
-|부가가치세|VAT||결제금액/11, 소수점 이하 반올림|
-|카드사데이터|DATA||공통헤더 부문 + 데이터 부문|
-|결과|RESULT||성공/실패|
-|설명|INFORMATION||성공 혹은 실패 금액 및 이유|
+| |COLUMN NAME|INFORMATION|
+|-|----------|-------|
+|관리번호|ID|UNIQUE ID, 20자리|
+|카드번호|CARD_NUMBER|10-16자리|
+|유효기간|EXPIRATION_DATE|4자리, MMYY|
+|CVC|CVC|3자리|
+|결제/취소 구분|TYPE|PAYMENT/CANCEL/PARTIAL_CANCEL|
+|할부개월수|INSTALLMENT_MONTHS|0-12, 0은 일시불|
+|결제금액|PAYMENT_PRICE|100원 이상 10억원 이하 숫자|
+|취소금액|CANCEL_PRICE|100원 이상 10억원 이하 숫자|
+|부가가치세|VAT|결제금액/11, 소수점 이하 반올림|
+|카드사데이터|DATA|공통헤더 부문 + 데이터 부문|
+|결과|RESULT|성공/실패|
+|설명|INFORMATION|성공 혹은 실패 금액 및 이유|
 
 ## 문제 해결
+
+### 카드번호, 유효기간, CVC 데이터 암호화 및 복호화
+Jasypt 라이브러리 + PBEWithMD5AndDES 암호화 알고리즘
+1. Jasypt 의존성 추가
+2. `@EnableEncryptableProperties` 어노테이션 사용하여 암호화 속성 활성화
+3. `JasyptStringEncryptor` 빈 사용하여 데이터 암호화 및 복호화 코드 작성
+4. EncryptionConfig, EncryptionService 파일 참고
 
 ## 빌드 및 실행 방법
 
 ### Swagger를 이용한 테스트
-http://localhost:8080/swagger-ui/index.html
+1. [Swagger](http://localhost:8080/swagger-ui/index.html)에 접속한다.
+2. 아래 예시 JSON 데이터를 이용해 API들을 테스트한다.
+
+POST /common/payment/api
+```
+{
+  "cardNumber": "1234567890123456",
+  "expirationDate": "1125",
+  "cvc": "777",
+  "installmentMonths": 0,
+  "paymentPrice": 110000,
+  "vat": 10000
+}
+```

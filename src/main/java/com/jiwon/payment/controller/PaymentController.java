@@ -3,9 +3,11 @@ package com.jiwon.payment.controller;
 import com.jiwon.payment.controller.parameter.PaymentParam;
 import com.jiwon.payment.controller.parameter.ResultParam;
 import com.jiwon.payment.entity.Payment;
+import com.jiwon.payment.service.EncryptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,7 +31,7 @@ public class PaymentController {
     */
     @Operation(tags={"Payment"}, summary="Store payment information")
     @PostMapping(value="pay")
-    public ResponseEntity<ResultParam> cardPaying(@RequestBody(required = true) PaymentParam paymentParam) {
+    public ResponseEntity<Payment> cardPaying(@RequestBody(required = true) PaymentParam paymentParam) {
         try {
             // Check request
             log.info("======== CardPaying API ========");
@@ -73,7 +75,8 @@ public class PaymentController {
             payment.setResult(Payment.RESULT_TYPE.SUCCESS);
             payment.setInformation(addCommas(paymentParam.getPaymentPrice()) + "(" + addCommas(vat_price) + ")원 결제 성공");
 
-            return ResponseEntity.ok().headers(header).body(resultParam);
+            // return ResponseEntity.ok().headers(header).body(resultParam);
+            return ResponseEntity.ok().headers(header).body(payment);
 
         } catch (Exception e) {
             log.error("Exception : {}", e.getMessage());
@@ -139,13 +142,13 @@ public class PaymentController {
     }
 
     // 카드번호, 유효기간, CVC 데이터를 암호화
-    // TODO: 암호화 진행
     public static String dataEncryption(PaymentParam paymentParam) {
         String card_num = paymentParam.getCardNumber();
         String expire_date = paymentParam.getExpirationDate();
         String cvc = paymentParam.getCvc();
 
-        String full_data = card_num.concat(expire_date).concat(cvc);
+        String full_data = card_num.concat("|").concat(expire_date).concat("|").concat(cvc);
+        full_data = EncryptionService.encryptData(full_data);
 
         return full_data;
     }

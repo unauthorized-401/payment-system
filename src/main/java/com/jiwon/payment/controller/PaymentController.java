@@ -3,7 +3,8 @@ package com.jiwon.payment.controller;
 import com.jiwon.payment.controller.parameter.PaymentParam;
 import com.jiwon.payment.controller.parameter.ResultParam;
 import com.jiwon.payment.entity.Payment;
-import com.jiwon.payment.service.EncryptionService;
+import com.jiwon.payment.common.EncryptionService;
+import com.jiwon.payment.service.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,9 @@ import java.util.UUID;
 @RequestMapping(value={"/common/payment"})
 @Controller
 public class PaymentController {
+    @Autowired
+    private PaymentService<Payment> paymentService;
+
     /*
         카드결제 API
 
@@ -31,7 +35,7 @@ public class PaymentController {
     */
     @Operation(tags={"Payment"}, summary="Store payment information")
     @PostMapping(value="pay")
-    public ResponseEntity<Payment> cardPaying(@RequestBody(required = true) PaymentParam paymentParam) {
+    public ResponseEntity<ResultParam> cardPaying(@RequestBody(required = true) PaymentParam paymentParam) {
         try {
             // Check request
             log.info("======== CardPaying API ========");
@@ -61,7 +65,6 @@ public class PaymentController {
             header.add("manage_num", manage_num);                           // 관리번호
 
             // PAYMENT Table
-            // TODO: 데이터베이스에 저장
             Payment payment = new Payment();
             payment.setId(manage_num);
             payment.setCardNumber(paymentParam.getCardNumber());
@@ -75,8 +78,9 @@ public class PaymentController {
             payment.setResult(Payment.RESULT_TYPE.SUCCESS);
             payment.setInformation(addCommas(paymentParam.getPaymentPrice()) + "(" + addCommas(vat_price) + ")원 결제 성공");
 
-            // return ResponseEntity.ok().headers(header).body(resultParam);
-            return ResponseEntity.ok().headers(header).body(payment);
+            paymentService.save(payment);
+
+            return ResponseEntity.ok().headers(header).body(resultParam);
 
         } catch (Exception e) {
             log.error("Exception : {}", e.getMessage());

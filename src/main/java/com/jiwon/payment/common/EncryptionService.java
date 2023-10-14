@@ -1,4 +1,4 @@
-package com.jiwon.payment.service;
+package com.jiwon.payment.common;
 
 import com.jiwon.payment.configuration.EncryptionConfig;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;

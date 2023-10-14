@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,6 +30,9 @@ import java.util.StringTokenizer;
 public class PaymentController {
     @Autowired
     private PaymentService<Payment> paymentService;
+
+    @Value("${jasypt.encryptor.password}")
+    private String password;
 
     /*
         카드결제 API
@@ -50,7 +54,7 @@ public class PaymentController {
             int vat_price = CommonFunction.computeVat(paymentRequestParam.getPaymentPrice(), paymentRequestParam.getVat());
 
             // 카드번호, 유효기간, CVC 암호화
-            String encryptData = CommonFunction.dataEncryption(paymentRequestParam);
+            String encryptData = CommonFunction.dataEncryption(paymentRequestParam, password);
 
             // 카드사로 보낼 데이터 생성
             String string_data =
@@ -129,7 +133,7 @@ public class PaymentController {
                 }
 
                 // 카드번호, 유효기간, CVC 복호화
-                String decryptData = EncryptionService.decryptData(data);
+                String decryptData = EncryptionService.decryptData(data, password);
 
                 StringTokenizer tokens = new StringTokenizer(decryptData, "|");
                 String card_num = tokens.hasMoreTokens() ? tokens.nextToken() : "";
@@ -252,7 +256,7 @@ public class PaymentController {
                 retrieveResponseParam.setId(payment.getId());
 
                 // 카드번호, 유효기간, CVC 복호화
-                String decryptData = EncryptionService.decryptData(payment.getData());
+                String decryptData = EncryptionService.decryptData(payment.getData(), password);
 
                 StringTokenizer tokens = new StringTokenizer(decryptData, "|");
 
@@ -369,7 +373,7 @@ public class PaymentController {
                 int newVat = Integer.valueOf(payment.getVat()) - vat_price;
 
                 // 카드번호, 유효기간, CVC 복호화
-                String decryptData = EncryptionService.decryptData(data);
+                String decryptData = EncryptionService.decryptData(data, password);
 
                 StringTokenizer tokens = new StringTokenizer(decryptData, "|");
                 String card_num = tokens.hasMoreTokens() ? tokens.nextToken() : "";

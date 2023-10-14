@@ -60,13 +60,13 @@ public class CommonFunction {
     }
 
     // 카드번호, 유효기간, CVC 데이터를 암호화
-    public static String dataEncryption(PaymentRequestParam paymentRequestParam) {
+    public static String dataEncryption(PaymentRequestParam paymentRequestParam, String password) {
         String card_num = paymentRequestParam.getCardNumber();
         String expire_date = paymentRequestParam.getExpirationDate();
         String cvc = paymentRequestParam.getCvc();
 
         String full_data = card_num.concat("|").concat(expire_date).concat("|").concat(cvc);
-        full_data = EncryptionService.encryptData(full_data);
+        full_data = EncryptionService.encryptData(full_data, password);
 
         return full_data;
     }

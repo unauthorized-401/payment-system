@@ -256,8 +256,8 @@ public class PaymentController {
 
                 StringTokenizer tokens = new StringTokenizer(decryptData, "|");
 
-                // TODO: 앞 6자리, 뒤 3자리 제외한 나머지 마스킹 처리
                 String card_num = tokens.hasMoreTokens() ? tokens.nextToken() : "";
+                card_num = CommonFunction.stringMasking(card_num);
                 String expire_date = tokens.hasMoreTokens() ? tokens.nextToken() : "";
                 String cvc = tokens.hasMoreTokens() ? tokens.nextToken() : "";
 

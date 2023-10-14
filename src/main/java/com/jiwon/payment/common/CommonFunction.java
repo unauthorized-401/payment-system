@@ -4,38 +4,63 @@ import com.jiwon.payment.controller.parameter.CancelRequestParam;
 import com.jiwon.payment.controller.parameter.PaymentRequestParam;
 import com.jiwon.payment.entity.Payment;
 import com.jiwon.payment.exceptions.InvalidParameterException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Base64;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 public class CommonFunction {
     // Payment 입력값 Validation 체크
     public static void checkPaymentParam(PaymentRequestParam paymentRequestParam) {
         if (Optional.ofNullable(paymentRequestParam.getCardNumber()).isEmpty() || paymentRequestParam.getCardNumber() == "") {
+            log.error("The card number field is required.");
             throw new InvalidParameterException("card number");
         }
         if (Optional.ofNullable(paymentRequestParam.getExpirationDate()).isEmpty() || paymentRequestParam.getExpirationDate() == "") {
+            log.error("The expiration date field is required.");
             throw new InvalidParameterException("expiration date");
         }
         if (Optional.ofNullable(paymentRequestParam.getCvc()).isEmpty() || paymentRequestParam.getCvc() == "") {
+            log.error("The cvc field is required.");
             throw new InvalidParameterException("cvc");
         }
         if (Optional.ofNullable(paymentRequestParam.getInstallmentMonths()).isEmpty()) {
+            log.error("The installment months field is required.");
             throw new InvalidParameterException("installment months");
         }
         if (Optional.ofNullable(paymentRequestParam.getPaymentPrice()).isEmpty()) {
+            log.error("The payment price field is required.");
             throw new InvalidParameterException("payment price");
+        }
+        
+        // 부가가치세는 결제금액보다 클 수 없음
+        if (Optional.ofNullable(paymentRequestParam.getVat()).isPresent()
+                && paymentRequestParam.getPaymentPrice() < Integer.parseInt(paymentRequestParam.getVat())) {
+
+            log.error("The vat is bigger than payment price.");
+            throw new InvalidParameterException("vat");
         }
     }
 
     // Cancel 입력값 Validation 체크
     public static void checkCancelParam(CancelRequestParam cancelRequestParam) {
         if (Optional.ofNullable(cancelRequestParam.getId()).isEmpty() || cancelRequestParam.getId() == "") {
+            log.error("The id field is required.");
             throw new InvalidParameterException("id");
         }
         if (Optional.ofNullable(cancelRequestParam.getCancelPrice()).isEmpty()) {
+            log.error("The cancel price field is required.");
             throw new InvalidParameterException("cancel price");
+        }
+
+        // 부가가치세는 결제금액보다 클 수 없음
+        if (Optional.ofNullable(cancelRequestParam.getVat()).isPresent()
+                && cancelRequestParam.getCancelPrice() < Integer.parseInt(cancelRequestParam.getVat())) {
+
+            log.error("The vat is bigger than cancel price.");
+            throw new InvalidParameterException("vat");
         }
     }
 

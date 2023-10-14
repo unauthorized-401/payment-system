@@ -8,6 +8,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class NotSupportException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
+    public NotSupportException() {
+        super(new StringBuilder("This cancel request is invalid.").toString());
+    }
+
     public NotSupportException(String invalidParameter) {
         super(new StringBuilder("The ").append(invalidParameter).append("value is not correct.").toString());
     }

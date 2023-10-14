@@ -94,7 +94,7 @@ POST /common/payment/pay
 }
 ```
 
-POST /common/payment/cancel
+DELETE /common/payment/cancel
 ```
 {
   "id": "OWRjZTZlZjctZTdkZC00",
@@ -110,11 +110,24 @@ POST /common/payment/retrieve
 }
 ```
 
+DELETE /common/payment/cancel/partial
+```
+{
+  "id": "OWRjZTZlZjctZTdkZC00",
+  "cancelPrice": 11000,
+  "vat": "1000"
+}
+```
+
 ### Error Status Code
 - ResourceNotFoundException (404)
-  - 이미 전체취소했는데 취소를 또 시도할 때
+  - 이미 취소했는데 취소를 또 시도할 때
+  - 없는 데이터를 조회하려 할 때
 - InvalidParameterException (405)
   - 필수값이 입력되지 않았을 때
-  - 없는 데이터를 조회하려 할 때
 - NotSupportException (406)
   - 금액이나 부가가치세가 올바르지 않을 때
+  - 남아있는 결제 금액이 없는데 부분 취소를 요청할 때
+  - 요청한 부분 취소 결제 금액이 남아있는 결제 금액보다 클 때
+  - 요청한 취소 부가가치세가 남아있는 부가가치세보다 클 때
+  - 남은 요금은 다 취소됐지만 부가가치세가 남아있을 때

@@ -1,5 +1,6 @@
 package com.jiwon.payment.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.Getter;
@@ -37,6 +38,7 @@ public class Payment {
     private long vat;
 
     // 카드사데이터: 공통헤더 부문 + 데이터 부문
+    @Column(length=450)
     private String data;
 
     // 결과: 성공/실패

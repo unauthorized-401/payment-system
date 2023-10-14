@@ -71,6 +71,29 @@ public class CommonFunction {
         return full_data;
     }
 
+    // 카드번호 앞 6자리, 뒤 3자리 제외한 나머지 마스킹 처리
+    public static String stringMasking(String originalString) {
+        if (originalString == null || originalString.length() <= 9) {
+            return originalString;
+        }
+
+        int length = originalString.length();
+        StringBuilder maskedString = new StringBuilder();
+
+        // 앞 6자리는 그대로 표시
+        maskedString.append(originalString.substring(0, 6));
+
+        // 나머지 문자열을 '*'로 마스킹 처리
+        for (int i = 6; i < length - 3; i++) {
+            maskedString.append('*');
+        }
+
+        // 뒤 3자리는 그대로 표시
+        maskedString.append(originalString.substring(length - 3));
+
+        return maskedString.toString();
+    }
+
     // 카드사로 전송하는 string 데이터 생성 (Payment)
     public static String generatePaymentStringData(PaymentRequestParam paymentRequestParam,
                                                    String manage_num, int vat_price, String encryptData) {

@@ -328,7 +328,7 @@ public class PaymentController {
                         Optional.ofNullable(paymentService.findByPaymentId(cancelRequestParam.getId()));
 
                 if (checkCancelHistory.isPresent()) {
-                    log.error("Thid id({}) is already canceled completely.");
+                    log.error("This id({}) is already canceled completely.");
                     throw new ResourceNotFoundException(cancelRequestParam.getId());
                 }
 

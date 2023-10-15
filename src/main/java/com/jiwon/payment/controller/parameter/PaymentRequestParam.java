@@ -16,7 +16,7 @@ public class PaymentRequestParam {
 
     private String cvc;
 
-    private int installmentMonths;
+    private String installmentMonths;
 
     private long paymentPrice;
 

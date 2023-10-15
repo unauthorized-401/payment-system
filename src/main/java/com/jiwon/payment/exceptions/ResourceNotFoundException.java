@@ -13,6 +13,6 @@ public class ResourceNotFoundException extends RuntimeException {
     }
 
     public ResourceNotFoundException(String id) {
-        super(new StringBuilder("This id(").append(id).append(") is already canceled.").toString());
+        super(new StringBuilder("This payment is already canceled completely.").toString());
     }
 }

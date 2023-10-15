@@ -93,6 +93,7 @@ public class PaymentServiceImple<T extends Payment> implements PaymentService<T>
             else retrieveResponseParam.setPrice(payment.getCancelPrice());
 
             retrieveResponseParam.setVat(payment.getVat());
+            retrieveResponseParam.setInstallmentMonths(payment.getInstallmentMonths());
 
             return retrieveResponseParam;
 
@@ -120,7 +121,7 @@ public class PaymentServiceImple<T extends Payment> implements PaymentService<T>
                     Optional.ofNullable(paymentRepository.findByPaymentId(cancelRequestParam.getId()));
 
             if (checkCancelHistory.isPresent()) {
-                log.error("This id({}) is already canceled completely.");
+                log.error("This payment is already canceled completely.");
                 throw new ResourceNotFoundException(cancelRequestParam.getId());
             }
 
@@ -142,7 +143,7 @@ public class PaymentServiceImple<T extends Payment> implements PaymentService<T>
             }
 
             // 할부개월수는 0으로 저장
-            newPayment.setInstallmentMonths(0);
+            newPayment.setInstallmentMonths("00");
             newPayment.setCancelPrice(cancelRequestParam.getCancelPrice());
 
             // 부가가치세 값이 없는 경우 결제데이터의 부가가치세 금액으로 취소 진행
@@ -204,7 +205,7 @@ public class PaymentServiceImple<T extends Payment> implements PaymentService<T>
                     Optional.ofNullable(paymentRepository.findByPaymentId(cancelRequestParam.getId()));
 
             if (checkCancelHistory.isPresent()) {
-                log.error("This id({}) is already canceled completely.");
+                log.error("This payment is already canceled completely.");
                 throw new ResourceNotFoundException(cancelRequestParam.getId());
             }
 
@@ -261,7 +262,7 @@ public class PaymentServiceImple<T extends Payment> implements PaymentService<T>
             newPayment.setType(Payment.PAYMENT_TYPE.CANCEL);
 
             // 할부개월수는 0으로 저장
-            newPayment.setInstallmentMonths(0);
+            newPayment.setInstallmentMonths("00");
             newPayment.setCancelPrice(payment.getPaymentPrice());
             newPayment.setVat(payment.getVat());
 

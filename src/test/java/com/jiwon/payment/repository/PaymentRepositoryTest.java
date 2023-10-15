@@ -8,6 +8,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+// 데이터베이스 조작 및 조회(CRUD) 테스트
+
 @SpringBootTest
 public class PaymentRepositoryTest {
     @Autowired
@@ -19,11 +21,11 @@ public class PaymentRepositoryTest {
         payment.setPaymentId("0D2zu93Z2Hks83D4A3fl");
         payment.setData("VafrJ3eKTF8oPJwibkMFpjpFCluevC/oSLC15k8PGw0mCv7rqGoCSg==");
         payment.setType(Payment.PAYMENT_TYPE.PAYMENT);
-        payment.setInstallmentMonths(0);
+        payment.setInstallmentMonths("12");
         payment.setPaymentPrice(110000);
         payment.setCancelPrice(0);
         payment.setVat(10000);
-        payment.setStringData(" 446PAYMENT   M2NhNjczZTAtZjRjOS001234567890123456    001125777    1100000000010000                    VafrJ3eKTF8oPJwibkMFpjpFCluevC/oSLC15k8PGw0mCv7rqGoCSg==                                                                                                                                                                                                                                                                                                   ");
+        payment.setStringData(" 446PAYMENT   M2NhNjczZTAtZjRjOS001234567890123456    121125777    1100000000010000                    VafrJ3eKTF8oPJwibkMFpjpFCluevC/oSLC15k8PGw0mCv7rqGoCSg==                                                                                                                                                                                                                                                                                                   ");
         return payment;
     }
 

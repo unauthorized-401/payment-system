@@ -22,8 +22,8 @@ public class Payment {
     // 결제/취소 구분
     private PAYMENT_TYPE type;
 
-    // 할부개월수: 0-12, 0은 일시불
-    private int installmentMonths;
+    // 할부개월수: 00-12, 00은 일시불
+    private String installmentMonths;
 
     // 결제금액: 100원 이상 10억원 이하 숫자
     private long paymentPrice;

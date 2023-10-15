@@ -26,7 +26,7 @@ public class CommonFunction {
             log.error("The cvc field is required.");
             throw new InvalidParameterException("cvc");
         }
-        if (Optional.ofNullable(paymentRequestParam.getInstallmentMonths()).isEmpty()) {
+        if (Optional.ofNullable(paymentRequestParam.getInstallmentMonths()).isEmpty() || paymentRequestParam.getInstallmentMonths() == "") {
             log.error("The installment months field is required.");
             throw new InvalidParameterException("installment months");
         }
@@ -136,8 +136,7 @@ public class CommonFunction {
         data = data.concat(card_align);
 
         // 할부개월수 2자리
-        data = data.concat("0");
-        data = data.concat(String.valueOf(paymentRequestParam.getInstallmentMonths()));
+        data = data.concat(paymentRequestParam.getInstallmentMonths());
 
         // 유효기간 4자리
         data = data.concat(paymentRequestParam.getExpirationDate());
@@ -198,8 +197,7 @@ public class CommonFunction {
         data = data.concat(card_align);
 
         // 할부개월수 2자리
-        data = data.concat("0");
-        data = data.concat(String.valueOf(payment.getInstallmentMonths()));
+        data = data.concat(payment.getInstallmentMonths());
 
         // 유효기간 4자리
         data = data.concat(expire_date);

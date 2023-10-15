@@ -3,7 +3,6 @@ package com.jiwon.payment;
 import com.jiwon.payment.controller.parameter.*;
 import com.jiwon.payment.entity.Payment;
 import com.jiwon.payment.repository.PaymentRepository;
-import com.jiwon.payment.service.PaymentService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,7 @@ import org.springframework.http.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// API 정상작동 테스트 (Thread-Safe 테스트)
+// API 정상작동 테스트
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class PaymentApplicationTest {
@@ -23,9 +22,6 @@ class PaymentApplicationTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
-
-    @Autowired
-    private PaymentService<Payment> paymentService;
 
     @Autowired
     private PaymentRepository<Payment> paymentRepository;

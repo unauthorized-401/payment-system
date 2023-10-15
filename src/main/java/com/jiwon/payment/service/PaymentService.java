@@ -1,13 +1,14 @@
 package com.jiwon.payment.service;
 
+import com.jiwon.payment.controller.parameter.*;
 import com.jiwon.payment.entity.Payment;
-import org.springframework.stereotype.Service;
 
 public interface PaymentService<T extends Payment> {
-    void save(T entity);
+    PaymentResponseParam createPayment(PaymentRequestParam paymentRequestParam);
 
-    T findById(String id);
-    T findByPaymentId(String paymentId);
+    CancelResponseParam cancelPayment(CancelRequestParam cancelRequestParam);
 
-    void update(String id, long paymentPrice, int vat);
+    RetrieveResponseParam searchPayment(RetrieveRequestParam retrieveRequestParam);
+
+    CancelResponseParam partialCancelPayment(CancelRequestParam cancelRequestParam);
 }

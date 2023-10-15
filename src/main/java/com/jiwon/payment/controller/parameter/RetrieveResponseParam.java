@@ -24,4 +24,6 @@ public class RetrieveResponseParam {
     private long price;
 
     private int vat;
+
+    private String installmentMonths;
 }

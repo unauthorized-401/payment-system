@@ -72,6 +72,24 @@ Jasypt 라이브러리 + PBEWithMD5AndDES 암호화 알고리즘
 4. EncryptionConfig, EncryptionService 파일 참고
 
 ## 빌드 및 실행 방법
+### 프로젝트 빌드 및 실행
+윈도우 환경 기준으로 빌드하는 방법을 설명합니다.
+
+1. 깃허브에서 프로젝트를 받아온다.
+```
+git clone https://github.com/kakao-insurance-quiz/20231013-sjw.git
+```
+
+2. 프로젝트를 빌드하고 실행한다.
+```
+# 프로젝트 빌드
+cd 20231013-sjw
+gradlew build
+
+# 프로젝트 실행
+cd build/libs
+java -jar payment-0.0.1-SNAPSHOT.jar
+```
 
 ### Swagger를 이용한 테스트
 1. [Swagger](http://localhost:8080/swagger-ui/index.html)에 접속한다.
@@ -83,9 +101,16 @@ POST /common/payment/pay
   "cardNumber": "1234567890123456",
   "expirationDate": "1125",
   "cvc": "777",
-  "installmentMonths": 0,
+  "installmentMonths": "12",
   "paymentPrice": 110000,
   "vat": "10000"
+}
+```
+
+POST /common/payment/retrieve
+```
+{
+    "id": "OWRjZTZlZjctZTdkZC00"
 }
 ```
 
@@ -98,13 +123,6 @@ DELETE /common/payment/cancel
 }
 ```
 
-POST /common/payment/retrieve
-```
-{
-    "id": "OWRjZTZlZjctZTdkZC00"
-}
-```
-
 DELETE /common/payment/cancel/partial
 ```
 {
@@ -114,7 +132,16 @@ DELETE /common/payment/cancel/partial
 }
 ```
 
-### Error Status Code
+### 테스트 코드를 이용한 테스트
+1. `src/test`에 작성된 테스트 코드를 실행한다.
+- PaymentRepositoryTest : 데이터베이스 조작 및 조회(CRUD) 테스트
+- PaymentServiceTest : 비즈니스 로직에 대한 신뢰성 테스트
+- PaymentApplicationTest : API 정상작동 테스트 (Thread-Safe 테스트)
+- PaymentTestCase1 : 부분취소 Test Case 1
+- PaymentTestCase2 : 부분취소 Test Case 2
+- PaymentTestCase3 : 부분취소 Test Case 3
+
+## Error Status Code
 - ResourceNotFoundException (404)
   - 이미 취소했는데 취소를 또 시도할 때
   - 없는 데이터를 조회하려 할 때

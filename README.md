@@ -39,8 +39,8 @@
   - [x] 결제 취소 API
   - [x] 결제 정보조회 API
   - [x] 부분 취소 API
-- [ ] 멀티 스레드 구현
-  - [ ] 멀티 스레드 테스트 코드 작성
+- [x] 멀티 스레드 구현
+  - [x] 멀티 스레드 테스트 코드 작성
 - [ ] 전체 테스트 후 제출
   - [ ] 요구사항 검토
   - [ ] 전체 테스트
@@ -51,7 +51,7 @@
 테이블명 : PAYMENT
 
 | |COLUMN NAME|INFORMATION|
-|-|----------|-------|
+|-|-----------|-----------|
 |관리번호|ID|UNIQUE ID, 20자리|
 |원거래 관리번호|PAYMENT_ID|취소시에만 저장|
 |결제/취소 구분|TYPE|PAYMENT/CANCEL|
@@ -64,16 +64,43 @@
 
 ## 문제 해결
 
-### 카드번호, 유효기간, CVC 데이터 암호화 및 복호화
+### 데이터 암호화 및 복호화
 Jasypt 라이브러리 + PBEWithMD5AndDES 암호화 알고리즘
 1. Jasypt 의존성 추가
 2. `@EnableEncryptableProperties` 어노테이션 사용하여 암호화 속성 활성화
 3. `JasyptStringEncryptor` 빈 사용하여 데이터 암호화 및 복호화 코드 작성
 4. EncryptionConfig, EncryptionService 파일 참고
 
+### 멀티 스레드 환경 대비
+제약조건
+- 결제: 하나의 카드번호로 동시에 결제를 할 수 없습니다.
+- 전체취소: 결제 한 건에 대한 전체취소를 동시에 할 수 없습니다.
+- 부분취소: 결제 한 건에 대한 부분취소를 동시에 할 수 없습니다.
+
+해결방법
+- 일단 하나의 카드번호로 동시에 결제하는 테스트 코드를 만들어보자.
+  - `CountDownLatch`와 `ExecutorService`를 사용하여 결제건이 병렬로 처리되도록 구현
+  - 같은 카드번호를 가지고 동시에 결제를 시도하면 거의 같은 시간에 처리를 시작하고 종료
+  - 특히 두 수행 시간은 차이가 거의 없음
+<p align="center">
+  <img src="./readme/pay_before.png" width="300px"></img>
+</p>
+
+- 같은 카드번호일 때만 문제가 됨으로 카드번호에 락을 부여하는 방법 선택
+  - 해당 요청은 처리 시간이 워낙 짧게 걸리므로 부득이하게 4초간의 대기 시간을 추가
+  - 두 요청 수행 시간의 차이가 4초 정도 난다는 것은 같은 카드번호에 대한 락이 걸렸다는 의미
+<p align="center">
+  <img src="./readme/pay_after.png" width="300px"></img>
+</p>
+
+- 전체취소와 부분취소도 위와 동일하게 락을 이용하여 해결
+  - 단, 전체취소는 처음 락을 가져간 취소건만 성공하고 나머지건은 모두 실패해야 함
+  - 부분취소는 락을 가져간 순서대로 실행
+  - 전체취소와 부분취소에서 사용하는 락은 동일한 락으로 사용
+
 ## 빌드 및 실행 방법
 ### 프로젝트 빌드 및 실행
-윈도우 환경 기준으로 빌드하는 방법을 설명합니다.
+Java와 Git은 미리 설치되어있다는 가정 하에 진행하며 윈도우 환경 기준으로 빌드/실행하는 방법을 설명합니다.
 
 1. 깃허브에서 프로젝트를 받아온다.
 ```
@@ -95,7 +122,9 @@ java -jar payment-0.0.1-SNAPSHOT.jar
 1. [Swagger](http://localhost:8080/swagger-ui/index.html)에 접속한다.
 2. 아래 예시 JSON 데이터를 이용해 API들을 테스트한다.
 
-POST /common/payment/pay
+카드결제 POST /common/payment/pay
+- 부가가치세 (vat) 값은 옵션이며 입력하지 않을 경우 자동 계산
+- 자동계산 수식: 결제금액 / 11, 소수점 이하 반올림
 ```
 {
   "cardNumber": "1234567890123456",
@@ -107,14 +136,15 @@ POST /common/payment/pay
 }
 ```
 
-POST /common/payment/retrieve
+결제조회 POST /common/payment/retrieve
 ```
 {
     "id": "OWRjZTZlZjctZTdkZC00"
 }
 ```
 
-DELETE /common/payment/cancel
+결제취소 DELETE /common/payment/cancel
+- 부가가치세 (vat) 값은 옵션이며 입력하지 않을 경우 결제 데이터의 부가가치세 금액으로 취소 진행
 ```
 {
   "id": "OWRjZTZlZjctZTdkZC00",
@@ -123,7 +153,9 @@ DELETE /common/payment/cancel
 }
 ```
 
-DELETE /common/payment/cancel/partial
+결제 부분취소 DELETE /common/payment/cancel/partial
+- 부가가치세 (vat) 값은 옵션이며 입력하지 않을 경우 자동 계산
+- 자동계산 수식: 결제금액 / 11, 소수점 이하 반올림
 ```
 {
   "id": "OWRjZTZlZjctZTdkZC00",
@@ -136,12 +168,13 @@ DELETE /common/payment/cancel/partial
 1. `src/test`에 작성된 테스트 코드를 실행한다.
 - PaymentRepositoryTest : 데이터베이스 조작 및 조회(CRUD) 테스트
 - PaymentServiceTest : 비즈니스 로직에 대한 신뢰성 테스트
-- PaymentApplicationTest : API 정상작동 테스트 (Thread-Safe 테스트)
+- PaymentApplicationTest : API 정상작동 테스트
+- PaymentMultiThreadTest : Thread-Safe 테스트
 - PaymentTestCase1 : 부분취소 Test Case 1
 - PaymentTestCase2 : 부분취소 Test Case 2
 - PaymentTestCase3 : 부분취소 Test Case 3
 
-## Error Status Code
+## 에러 상태 코드
 - ResourceNotFoundException (404)
   - 이미 취소했는데 취소를 또 시도할 때
   - 없는 데이터를 조회하려 할 때

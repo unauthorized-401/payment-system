@@ -44,7 +44,7 @@ class PaymentMultiThreadTest {
         // 병렬로 여러 결제 요청 처리
         ExecutorService executorService = Executors.newFixedThreadPool(2);
 
-        long[] processTimes = new long[2];
+        int[] returnCodes = new int[2];
 
         for (int i = 0; i < 2; i++) {
             final int index = i;
@@ -63,12 +63,8 @@ class PaymentMultiThreadTest {
                     String url = "http://localhost:" + port + "/common/payment/pay";
 
                     // When
-                    long requestStartTime = System.currentTimeMillis();         // 결제 요청 시작 시간
                     ResponseEntity<PaymentResponseParam> response = restTemplate.postForEntity(url, paymentRequestParam, PaymentResponseParam.class);
-                    long requestEndTime = System.currentTimeMillis();           // 결제 요청 완료 시간
-                    processTimes[index] = requestEndTime - requestStartTime;
-
-                    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+                    returnCodes[index] = response.getStatusCode().value();
 
                 } finally {
                     latch.countDown();
@@ -79,8 +75,15 @@ class PaymentMultiThreadTest {
         latch.await();
         executorService.shutdown();
 
-        // Then: 두 결제의 요청처리 시간의 차가 3초 이상 난다면 성공 (대기시간 4초)
-        assertThat(Math.abs(processTimes[1] - processTimes[0])).isGreaterThan(3000);
+        for(int code: returnCodes) {
+            System.out.println("code: "+code);
+        }
+
+        // Then: 한 요청은 성공하고 한 요청은 실패해야 함
+        boolean hasSuccessResponse = Arrays.stream(returnCodes).anyMatch(code -> code == 200);
+        boolean hasErrorResponse = Arrays.stream(returnCodes).anyMatch(code -> code == 226);
+
+        assertThat(hasSuccessResponse && hasErrorResponse).isTrue();
     }
 
     @Test
@@ -142,9 +145,13 @@ class PaymentMultiThreadTest {
         latch.await();
         executorService.shutdown();
 
+        for(int code: returnCodes) {
+            System.out.println("code: "+code);
+        }
+
         // Then: 한 요청은 성공하고 한 요청은 실패해야 함
         boolean hasSuccessResponse = Arrays.stream(returnCodes).anyMatch(code -> code == 200);
-        boolean hasErrorResponse = Arrays.stream(returnCodes).anyMatch(code -> code == 404);
+        boolean hasErrorResponse = Arrays.stream(returnCodes).anyMatch(code -> code == 226);
 
         assertThat(hasSuccessResponse && hasErrorResponse).isTrue();
     }
@@ -170,7 +177,7 @@ class PaymentMultiThreadTest {
         ResponseEntity<PaymentResponseParam> response = restTemplate.postForEntity(url, paymentRequestParam, PaymentResponseParam.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        long[] processTimes = new long[2];
+        int[] returnCodes = new int[2];
 
         for (int i = 0; i < 2; i++) {
             final int index = i;
@@ -185,7 +192,6 @@ class PaymentMultiThreadTest {
                     String url2 = "http://localhost:" + port + "/common/payment/cancel/partial";
 
                     // When
-                    long requestStartTime = System.currentTimeMillis();         // 결제 요청 시작 시간
                     HttpHeaders headers = new HttpHeaders();
                     headers.setContentType(MediaType.APPLICATION_JSON);
 
@@ -197,8 +203,8 @@ class PaymentMultiThreadTest {
                             requestEntity,
                             PaymentResponseParam.class
                     );
-                    long requestEndTime = System.currentTimeMillis();           // 결제 요청 완료 시간
-                    processTimes[index] = requestEndTime - requestStartTime;
+
+                    returnCodes[index] = response2.getStatusCode().value();
 
                 } finally {
                     latch.countDown();
@@ -209,7 +215,14 @@ class PaymentMultiThreadTest {
         latch.await();
         executorService.shutdown();
 
-        // Then: 두 결제의 요청처리 시간의 차가 3초 이상 난다면 성공 (대기시간 4초)
-        assertThat(Math.abs(processTimes[1] - processTimes[0])).isGreaterThan(3000);
+        for(int code: returnCodes) {
+            System.out.println("code: "+code);
+        }
+
+        // Then: 한 요청은 성공하고 한 요청은 실패해야 함
+        boolean hasSuccessResponse = Arrays.stream(returnCodes).anyMatch(code -> code == 200);
+        boolean hasErrorResponse = Arrays.stream(returnCodes).anyMatch(code -> code == 226);
+
+        assertThat(hasSuccessResponse && hasErrorResponse).isTrue();
     }
 }

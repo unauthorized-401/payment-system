@@ -2,6 +2,7 @@ package com.jiwon.payment.controller;
 
 import com.jiwon.payment.controller.parameter.*;
 import com.jiwon.payment.entity.Payment;
+import com.jiwon.payment.exceptions.AlreadyUsedException;
 import com.jiwon.payment.exceptions.InvalidParameterException;
 import com.jiwon.payment.exceptions.NotSupportException;
 import com.jiwon.payment.exceptions.ResourceNotFoundException;
@@ -47,6 +48,14 @@ public class PaymentController {
 
             return ResponseEntity.ok().headers(header).body(paymentResponseParam);
 
+        } catch (AlreadyUsedException e) {
+            log.error("AlreadyUsedException : Status Code({})", HttpStatus.IM_USED);
+
+            return ResponseEntity.status(HttpStatus.IM_USED)
+                    .header("X-Exception-Type", e.getClass().toString())
+                    .header("X-Exception-Cause", e.getMessage())
+                    .build();
+
         } catch (InvalidParameterException e) {
             log.error("HttpClientErrorException : Status Code({})", HttpStatus.METHOD_NOT_ALLOWED);
 
@@ -86,6 +95,14 @@ public class PaymentController {
             header.add("manage_num", cancelResponseParam.getId());
 
             return ResponseEntity.ok().headers(header).body(cancelResponseParam);
+
+        } catch (AlreadyUsedException e) {
+            log.error("AlreadyUsedException : Status Code({})", HttpStatus.IM_USED);
+
+            return ResponseEntity.status(HttpStatus.IM_USED)
+                    .header("X-Exception-Type", e.getClass().toString())
+                    .header("X-Exception-Cause", e.getMessage())
+                    .build();
 
         } catch (ResourceNotFoundException e) {
             log.error("ResourceNotFoundException : Status Code({})", HttpStatus.NOT_FOUND);
@@ -175,6 +192,14 @@ public class PaymentController {
             header.add("manage_num", cancelResponseParam.getId());
 
             return ResponseEntity.ok().headers(header).body(cancelResponseParam);
+
+        } catch (AlreadyUsedException e) {
+            log.error("AlreadyUsedException : Status Code({})", HttpStatus.IM_USED);
+
+            return ResponseEntity.status(HttpStatus.IM_USED)
+                    .header("X-Exception-Type", e.getClass().toString())
+                    .header("X-Exception-Cause", e.getMessage())
+                    .build();
 
         } catch (ResourceNotFoundException e) {
             log.error("ResourceNotFoundException : Status Code({})", HttpStatus.NOT_FOUND);

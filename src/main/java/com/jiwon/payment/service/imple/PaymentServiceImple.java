@@ -98,12 +98,12 @@ public class PaymentServiceImple<T extends Payment> implements PaymentService<T>
             // 카드번호, 유효기간, CVC 복호화
             String decryptData = EncryptionService.decryptData(payment.getData(), password);
 
-            StringTokenizer tokens = new StringTokenizer(decryptData, "|");
+            String[] tokens = decryptData.split("\\|");
 
-            String card_num = tokens.hasMoreTokens() ? tokens.nextToken() : "";
+            String card_num = tokens.length > 0 ? tokens[0] : "";
             card_num = CommonFunction.stringMasking(card_num);
-            String expire_date = tokens.hasMoreTokens() ? tokens.nextToken() : "";
-            String cvc = tokens.hasMoreTokens() ? tokens.nextToken() : "";
+            String expire_date = tokens.length > 1 ? tokens[1] : "";
+            String cvc = tokens.length > 2 ? tokens[2] : "";
 
             retrieveResponseParam.setCardNumber(card_num);
             retrieveResponseParam.setExpirationPeriod(expire_date);

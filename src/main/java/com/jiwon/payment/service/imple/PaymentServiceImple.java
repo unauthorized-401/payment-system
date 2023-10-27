@@ -91,9 +91,7 @@ public class PaymentServiceImple<T extends Payment> implements PaymentService<T>
         Optional<Payment> optionalPayment =
                 Optional.ofNullable(paymentRepository.findById(retrieveRequestParam.getId()));
 
-        if (optionalPayment.isPresent()) {
-            Payment payment = optionalPayment.get();
-
+        return optionalPayment.map(payment -> {
             RetrieveResponseParam retrieveResponseParam = new RetrieveResponseParam();
             retrieveResponseParam.setId(payment.getId());
 
@@ -121,11 +119,11 @@ public class PaymentServiceImple<T extends Payment> implements PaymentService<T>
 
             return retrieveResponseParam;
 
-        } else {
+        }).orElseThrow(() ->{
             // 없는 데이터인 경우 Exception 처리
             log.error("The data is not correct.");
             throw new ResourceNotFoundException();
-        }
+        });
     }
 
     @Override

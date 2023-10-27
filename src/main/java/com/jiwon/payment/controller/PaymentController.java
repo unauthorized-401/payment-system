@@ -34,43 +34,20 @@ public class PaymentController {
     */
     @Operation(tags={"Payment"}, summary="Store payment information")
     @PostMapping(value="pay")
-    public ResponseEntity<PaymentResponseParam> cardPaying(
-                                            @RequestBody(required = true) PaymentRequestParam paymentRequestParam) {
+    public ResponseEntity<Object> cardPaying(
+            @RequestBody(required = true) PaymentRequestParam paymentRequestParam) {
         try {
             PaymentResponseParam paymentResponseParam = paymentService.createPayment(paymentRequestParam);
 
-            // Create Header
-            HttpHeaders header = new HttpHeaders();
-            header.setContentType(MediaType.APPLICATION_JSON);
-            header.add("data_length", "446");
-            header.add("data_type", "PAYMENT");
-            header.add("manage_num", paymentResponseParam.getId());
-
+            HttpHeaders header = createResponseHeaders(paymentResponseParam.getId());
             return ResponseEntity.ok().headers(header).body(paymentResponseParam);
 
         } catch (AlreadyUsedException e) {
-            log.error("AlreadyUsedException : Status Code({})", HttpStatus.IM_USED);
-
-            return ResponseEntity.status(HttpStatus.IM_USED)
-                    .header("X-Exception-Type", e.getClass().toString())
-                    .header("X-Exception-Cause", e.getMessage())
-                    .build();
-
+            return handleException(e, HttpStatus.IM_USED);
         } catch (InvalidParameterException e) {
-            log.error("HttpClientErrorException : Status Code({})", HttpStatus.METHOD_NOT_ALLOWED);
-
-            return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
-                    .header("X-Exception-Type", e.getClass().toString())
-                    .header("X-Exception-Cause", e.getMessage())
-                    .build();
-
+            return handleException(e, HttpStatus.METHOD_NOT_ALLOWED);
         } catch (Exception e) {
-            log.error("Exception : {}", e.getMessage());
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .header("X-Exception-Type", e.getClass().toString())
-                    .header("X-Exception-Cause", e.getMessage())
-                    .build();
+            return handleException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -82,59 +59,24 @@ public class PaymentController {
     */
     @Operation(tags={"Payment"}, summary="Cancel all payments")
     @DeleteMapping(value="cancel")
-    public ResponseEntity<CancelResponseParam> cardCanceling(
-                                            @RequestBody(required = true) CancelRequestParam cancelRequestParam) {
+    public ResponseEntity<Object> cardCanceling(
+            @RequestBody(required = true) CancelRequestParam cancelRequestParam) {
         try {
             CancelResponseParam cancelResponseParam = paymentService.cancelPayment(cancelRequestParam);
 
-            // Create Header
-            HttpHeaders header = new HttpHeaders();
-            header.setContentType(MediaType.APPLICATION_JSON);
-            header.add("data_length", "446");
-            header.add("data_type", "CANCEL");
-            header.add("manage_num", cancelResponseParam.getId());
-
+            HttpHeaders header = createResponseHeaders(cancelResponseParam.getId());
             return ResponseEntity.ok().headers(header).body(cancelResponseParam);
 
         } catch (AlreadyUsedException e) {
-            log.error("AlreadyUsedException : Status Code({})", HttpStatus.IM_USED);
-
-            return ResponseEntity.status(HttpStatus.IM_USED)
-                    .header("X-Exception-Type", e.getClass().toString())
-                    .header("X-Exception-Cause", e.getMessage())
-                    .build();
-
+            return handleException(e, HttpStatus.IM_USED);
         } catch (ResourceNotFoundException e) {
-            log.error("ResourceNotFoundException : Status Code({})", HttpStatus.NOT_FOUND);
-
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .header("X-Exception-Type", e.getClass().toString())
-                    .header("X-Exception-Cause", e.getMessage())
-                    .build();
-
+            return handleException(e, HttpStatus.NOT_FOUND);
         } catch (InvalidParameterException e) {
-            log.error("InvalidParameterException : Status Code({})", HttpStatus.METHOD_NOT_ALLOWED);
-
-            return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
-                    .header("X-Exception-Type", e.getClass().toString())
-                    .header("X-Exception-Cause", e.getMessage())
-                    .build();
-
+            return handleException(e, HttpStatus.METHOD_NOT_ALLOWED);
         } catch (NotSupportException e) {
-            log.error("NotSupportException : Status Code({})", HttpStatus.NOT_ACCEPTABLE);
-
-            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
-                    .header("X-Exception-Type", e.getClass().toString())
-                    .header("X-Exception-Cause", e.getMessage())
-                    .build();
-
+            return handleException(e, HttpStatus.NOT_ACCEPTABLE);
         } catch (Exception e) {
-            log.error("Exception : {}", e.getMessage());
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .header("X-Exception-Type", e.getClass().toString())
-                    .header("X-Exception-Cause", e.getMessage())
-                    .build();
+            return handleException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -146,28 +88,17 @@ public class PaymentController {
     */
     @Operation(tags={"Payment"}, summary="Get payment information")
     @PostMapping(value="retrieve")
-    public ResponseEntity<RetrieveResponseParam> retrieving(
-                                            @RequestBody(required = true) RetrieveRequestParam retrieveRequestParam) {
+    public ResponseEntity<Object> retrieving(
+            @RequestBody(required = true) RetrieveRequestParam retrieveRequestParam) {
         try {
             RetrieveResponseParam retrieveResponseParam = paymentService.searchPayment(retrieveRequestParam);
 
             return ResponseEntity.ok().body(retrieveResponseParam);
 
         } catch (ResourceNotFoundException e) {
-            log.error("ResourceNotFoundException : Status Code({})", HttpStatus.NOT_FOUND);
-
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .header("X-Exception-Type", e.getClass().toString())
-                    .header("X-Exception-Cause", e.getMessage())
-                    .build();
-
+            return handleException(e, HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            log.error("Exception : {}", e.getMessage());
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .header("X-Exception-Type", e.getClass().toString())
-                    .header("X-Exception-Cause", e.getMessage())
-                    .build();
+            return handleException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -179,59 +110,45 @@ public class PaymentController {
     */
     @Operation(tags={"Payment"}, summary="Cancel partial payment")
     @DeleteMapping(value="cancel/partial")
-    public ResponseEntity<CancelResponseParam> cardPartialCanceling(
-                                            @RequestBody(required = true) CancelRequestParam cancelRequestParam) {
+    public ResponseEntity<Object> cardPartialCanceling(
+            @RequestBody(required = true) CancelRequestParam cancelRequestParam) {
         try {
             CancelResponseParam cancelResponseParam = paymentService.partialCancelPayment(cancelRequestParam);
 
-            // Create Header
-            HttpHeaders header = new HttpHeaders();
-            header.setContentType(MediaType.APPLICATION_JSON);
-            header.add("data_length", "446");
-            header.add("data_type", "CANCEL");
-            header.add("manage_num", cancelResponseParam.getId());
-
+            HttpHeaders header = createResponseHeaders(cancelResponseParam.getId());
             return ResponseEntity.ok().headers(header).body(cancelResponseParam);
 
         } catch (AlreadyUsedException e) {
-            log.error("AlreadyUsedException : Status Code({})", HttpStatus.IM_USED);
-
-            return ResponseEntity.status(HttpStatus.IM_USED)
-                    .header("X-Exception-Type", e.getClass().toString())
-                    .header("X-Exception-Cause", e.getMessage())
-                    .build();
-
+            return handleException(e, HttpStatus.IM_USED);
         } catch (ResourceNotFoundException e) {
-            log.error("ResourceNotFoundException : Status Code({})", HttpStatus.NOT_FOUND);
-
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .header("X-Exception-Type", e.getClass().toString())
-                    .header("X-Exception-Cause", e.getMessage())
-                    .build();
-
+            return handleException(e, HttpStatus.NOT_FOUND);
         } catch (InvalidParameterException e) {
-            log.error("InvalidParameterException : Status Code({})", HttpStatus.METHOD_NOT_ALLOWED);
-
-            return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
-                    .header("X-Exception-Type", e.getClass().toString())
-                    .header("X-Exception-Cause", e.getMessage())
-                    .build();
-
+            return handleException(e, HttpStatus.METHOD_NOT_ALLOWED);
         } catch (NotSupportException e) {
-            log.error("NotSupportException : Status Code({})", HttpStatus.NOT_ACCEPTABLE);
-
-            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
-                    .header("X-Exception-Type", e.getClass().toString())
-                    .header("X-Exception-Cause", e.getMessage())
-                    .build();
-
+            return handleException(e, HttpStatus.NOT_ACCEPTABLE);
         } catch (Exception e) {
-            log.error("Exception : {}", e.getMessage());
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .header("X-Exception-Type", e.getClass().toString())
-                    .header("X-Exception-Cause", e.getMessage())
-                    .build();
+            return handleException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private HttpHeaders createResponseHeaders(String id) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("data_length", "446");
+        headers.add("data_type", "PAYMENT");
+        headers.add("manage_num", id);
+        return headers;
+    }
+
+    private ResponseEntity<Object> handleException(Exception e, HttpStatus status) {
+        log.error("Exception: {}", e.getMessage());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-Exception-Type", e.getClass().toString());
+        headers.add("X-Exception-Cause", e.getMessage());
+
+        return ResponseEntity.status(status)
+                .headers(headers)
+                .build();
     }
 }

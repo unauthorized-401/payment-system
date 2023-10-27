@@ -13,6 +13,6 @@ public class NotSupportException extends RuntimeException {
     }
 
     public NotSupportException(String invalidParameter) {
-        super(new StringBuilder("The ").append(invalidParameter).append("value is not correct.").toString());
+        super(new StringBuilder("The ").append(invalidParameter).append(" value is not correct.").toString());
     }
 }

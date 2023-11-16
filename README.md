@@ -35,8 +35,6 @@ Jasypt 라이브러리 + PBEWithMD5AndDES 암호화 알고리즘
 
 ## 빌드 및 실행 방법
 ### 프로젝트 빌드 및 실행
-Java와 Git은 미리 설치되어있다는 가정 하에 진행하며 윈도우 환경 기준으로 빌드/실행하는 방법을 설명합니다.
-
 1. 깃허브에서 프로젝트를 받아온다.
 ```
 git clone https://github.com/unauthorized-401/Payment.git

@@ -43,3 +43,6 @@ out/
 *.iml
 out
 gen
+
+### ETC ###
+readme/.DS_Store

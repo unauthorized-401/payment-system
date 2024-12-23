@@ -107,7 +107,7 @@
   - 관리번호 : 문자, 길이 20, unique id
 - 데이터 부문
 
-  <img src="./readme/string_data.png" width="400px"></img>
+  <img src="./readme/string_data.png" width="500px"></img>
 
 ## string 데이터 예제
 - 결제요청 데이터
@@ -139,13 +139,13 @@
 
 ## Test Case
 ### Test Case 1
-<img src="./readme/test_case_01.png" width="400px"></img>
+<img src="./readme/test_case_01.png" width="500px"></img>
 
 ### Test Case 2
-<img src="./readme/test_case_02.png" width="400px"></img>
+<img src="./readme/test_case_02.png" width="500px"></img>
 
 ### Test Case 3
-<img src="./readme/test_case_03.png" width="400px"></img>
+<img src="./readme/test_case_03.png" width="500px"></img>
 
 ---
 
